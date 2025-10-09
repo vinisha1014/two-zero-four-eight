@@ -31,8 +31,8 @@ A polished, mobile-friendly 2048 game built with React, TypeScript and Tailwind 
 ## 🚀 Quick Start
 
 ```bash
-git clone <YOUR_REPO_URL>
-cd 2048
+git clone https://github.com/debugfest/two-zero-four-eight.git
+cd two-zero-four-eight
 
 # install deps
 npm install
