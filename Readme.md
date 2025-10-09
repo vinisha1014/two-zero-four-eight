@@ -89,7 +89,3 @@ npm run typecheck  # TS project type check
 ## 📝 Notes for Contributors
 
 Potential enhancements live in the app (theme switcher, leaderboard via Supabase, AI auto-player, richer animations, sounds, larger grids, achievements). PRs are welcome!
-
-## 📄 License
-
-MIT — see [LICENSE](LICENSE).
