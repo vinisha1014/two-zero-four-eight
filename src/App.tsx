@@ -4,6 +4,8 @@ import { useGameControls } from './hooks/useGameControls';
 import Grid from './components/Grid';
 import Header from './components/Header';
 import GameOverlay from './components/GameOverlay';
+import { ThemeProvider, useTheme } from './context/ThemeController';
+import ThemeSwitcher from './components/ThemeSwitcher';
 
 /**
  * Game component - Main game interface
@@ -36,12 +38,30 @@ function Game() {
 /**
  * App component - Root component with providers
  */
-function App() {
+
+function AppContent() {
+  const { theme } = useTheme();
+
   return (
+    <div
+      className={`min-h-screen w-full flex flex-col items-center justify-center transition-all duration-300 ${
+        theme === "dark"
+          ? "bg-gray-900 text-white"
+          : "bg-[#faf8ef] text-[#776e65]"
+      }`}
+    >
+      <Game />
+      <ThemeSwitcher />
+    </div>
+  );
+}
+
+
+function App() { 
+  return (
+    <ThemeProvider>
     <GameProvider>
-      <div className="min-h-screen flex items-center justify-center py-8 px-4">
-        <Game />
-      </div>
+      <AppContent/>
       {/* TODO: Add theme switcher (dark mode, colorblind mode) */}
       {/* TODO: Add AI auto-player mode */}
       {/* TODO: Add leaderboard integration with Supabase */}
@@ -49,6 +69,7 @@ function App() {
       {/* TODO: Add different board sizes (3x3, 5x5, 6x6) */}
       {/* TODO: Add achievements system */}
     </GameProvider>
+    </ThemeProvider>
   );
 }
 
