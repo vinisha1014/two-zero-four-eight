@@ -40,3 +40,34 @@
     animation: tile-merge 200ms ease-in-out;
   }
 }
+
+
+/* Base light/dark mode styles */
+:root {
+  --bg-color: #faf8ef;
+  --text-color: #776e65;
+}
+
+.dark {
+  --bg-color: #1e1e1e;
+  --text-color: #faf8ef;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background 0.3s, color 0.3s;
+}
+
+/* High contrast mode */
+.contrast-\[1\.5\] {
+  filter: contrast(1.5);
+}
+
+/* Large buttons */
+.large-buttons button {
+  padding: 1rem 1.5rem !important;
+  font-size: 1.125rem !important;
+}
+
+ 
