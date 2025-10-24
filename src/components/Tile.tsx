@@ -4,18 +4,11 @@ interface TileProps {
   tile: TileType;
 }
 
-/**
- * Tile component represents a single game tile
- * Animates position changes and merge animations using CSS transitions
- */
 const Tile = ({ tile }: TileProps) => {
   const { row, col } = tile.position;
-
-  // Calculate position (each cell is 80px + 12px gap)
   const left = col * 92 + 'px';
   const top = row * 92 + 'px';
 
-  // Get tile color based on value
   const getTileColor = (value: number): string => {
     const colors: Record<number, string> = {
       2: 'bg-[#eee4da] text-[#776e65]',
@@ -30,11 +23,9 @@ const Tile = ({ tile }: TileProps) => {
       1024: 'bg-[#edc53f] text-white',
       2048: 'bg-[#edc22e] text-white',
     };
-
     return colors[value] || 'bg-[#3c3a32] text-white';
   };
 
-  // Get font size based on value length
   const getFontSize = (value: number): string => {
     const digits = value.toString().length;
     if (digits <= 2) return 'text-5xl';
@@ -46,7 +37,7 @@ const Tile = ({ tile }: TileProps) => {
     <div
       className={`
         absolute w-20 h-20 rounded-md flex items-center justify-center
-        font-bold transition-all duration-150 ease-in-out
+        font-bold ease-in-out
         ${getTileColor(tile.value)}
         ${getFontSize(tile.value)}
         ${tile.isNew ? 'animate-tile-appear' : ''}
@@ -55,6 +46,8 @@ const Tile = ({ tile }: TileProps) => {
       style={{
         left,
         top,
+        transition: `all var(--tile-speed) ease-in-out`,
+        animationDuration: `var(--tile-speed)`,
       }}
     >
       {tile.value}

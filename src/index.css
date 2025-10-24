@@ -32,14 +32,16 @@
     }
   }
 
+  /* 👇 These now use the CSS variable instead of fixed 200ms */
   .animate-tile-appear {
-    animation: tile-appear 200ms ease-in-out;
+    animation: tile-appear var(--tile-speed, 200ms) ease-in-out;
   }
 
   .animate-tile-merge {
-    animation: tile-merge 200ms ease-in-out;
+    animation: tile-merge var(--tile-speed, 200ms) ease-in-out;
   }
 }
+
 
 
 /* Base light/dark mode styles */
