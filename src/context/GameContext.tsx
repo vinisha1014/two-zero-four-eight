@@ -4,7 +4,6 @@ import {
   useState,
   useCallback,
   ReactNode,
-  useEffect,
 } from "react";
 import { GameState, GameHistory, Direction } from "../types/game";
 import {
@@ -14,15 +13,14 @@ import {
   checkWin,
 } from "../utils/gameLogic";
 
-type AnimationMode = "normal" | "fast" | "off";
-
 interface GameContextType extends GameState {
   move: (direction: Direction) => void;
   restart: () => void;
   undo: () => void;
   canUndo: boolean;
-  animationMode: AnimationMode;
-  setAnimationMode: (mode: AnimationMode) => void;
+  moves: number;
+  merges: number;
+  averageTileValue: number;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -52,50 +50,34 @@ export const GameProvider = ({ children }: GameProviderProps) => {
   });
 
   const [history, setHistory] = useState<GameHistory[]>([]);
+  const [moves, setMoves] = useState(0);
+  const [merges, setMerges] = useState(0);
 
-  // Animation Mode State
-  const [animationMode, setAnimationModeState] = useState<AnimationMode>(
-    (localStorage.getItem("animationMode") as AnimationMode) || "normal"
-  );
+  // Safely calculate average tile value (works with Tile | null)
+  const calculateAverageTile = (grid: (any | null)[][]): number => {
+    const values = grid
+      .flat()
+      .map((v) => (v && typeof v === "object" && "value" in v ? v.value : 0))
+      .filter((v) => v !== 0);
 
-  const setAnimationMode = useCallback((mode: AnimationMode) => {
-    setAnimationModeState(mode);
-    localStorage.setItem("animationMode", mode);
-  }, []);
+    const sum = values.reduce((a, b) => a + b, 0);
+    return values.length ? Math.round(sum / values.length) : 0;
+  };
 
-  // Apply animation speed to CSS variable
-  useEffect(() => {
-    let speed = "0.3s"; // normal
-    if (animationMode === "fast") speed = "0.1s";
-    if (animationMode === "off") speed = "0s";
-
-    document.documentElement.style.setProperty("--tile-speed", speed);
-  }, [animationMode]);
-
-  // Save best score to localStorage
-  useEffect(() => {
-    if (gameState.score > gameState.bestScore) {
-      localStorage.setItem("bestScore", gameState.score.toString());
-    }
-  }, [gameState.score, gameState.bestScore]);
-
+  // Main move logic
   const move = useCallback(
     (direction: Direction) => {
       if (gameState.isGameOver) return;
 
-      // Save current state to history before moving
+      // Save history for undo
       setHistory((prev) => [
         ...prev,
-        {
-          grid: gameState.grid.map((row) => [...row]),
-          score: gameState.score,
-        },
+        { grid: gameState.grid.map((r) => [...r]), score: gameState.score },
       ]);
 
       const result = moveTiles(gameState.grid, direction);
 
       if (!result.moved) {
-        // Remove the history entry we just added since nothing changed
         setHistory((prev) => prev.slice(0, -1));
         return;
       }
@@ -105,6 +87,9 @@ export const GameProvider = ({ children }: GameProviderProps) => {
       const isWon = checkWin(result.grid);
       const isGameOver = checkGameOver(result.grid);
 
+      setMoves((prev) => prev + 1);
+      setMerges((prev) => prev + (result.mergedTiles || 0));
+
       setGameState({
         grid: result.grid,
         score: newScore,
@@ -113,12 +98,13 @@ export const GameProvider = ({ children }: GameProviderProps) => {
         isWon,
       });
 
-      // Keep only last 10 moves in history to prevent memory issues
+      // Keep last 10 states only
       setHistory((prev) => prev.slice(-10));
     },
     [gameState]
   );
 
+  // Restart game
   const restart = useCallback(() => {
     setGameState((prev) => ({
       grid: initializeGrid(),
@@ -128,8 +114,11 @@ export const GameProvider = ({ children }: GameProviderProps) => {
       isWon: false,
     }));
     setHistory([]);
+    setMoves(0);
+    setMerges(0);
   }, []);
 
+  // Undo last move
   const undo = useCallback(() => {
     if (history.length === 0) return;
 
@@ -142,7 +131,10 @@ export const GameProvider = ({ children }: GameProviderProps) => {
       isWon: false,
     }));
     setHistory((prev) => prev.slice(0, -1));
+    setMoves((prev) => Math.max(prev - 1, 0));
   }, [history]);
+
+  const averageTileValue = calculateAverageTile(gameState.grid);
 
   const value: GameContextType = {
     ...gameState,
@@ -150,8 +142,9 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     restart,
     undo,
     canUndo: history.length > 0,
-    animationMode,
-    setAnimationMode,
+    moves,
+    merges,
+    averageTileValue,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

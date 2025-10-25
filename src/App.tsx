@@ -6,6 +6,8 @@ import Header from './components/Header';
 import GameOverlay from './components/GameOverlay';
 import { ThemeProvider, useTheme } from './context/ThemeController';
 import ThemeSwitcher from './components/ThemeSwitcher';
+import StatsDashboard from './components/StatsDashboard';
+
 
 /**
  * Game component - Main game interface
@@ -22,6 +24,10 @@ function Game() {
         <Grid />
         <GameOverlay />
       </div>
+
+      {/* Add this right below the grid */}
+      <StatsDashboard />
+
       <div className="mt-6 text-center text-[#776e65] max-w-[400px]">
         <p className="text-sm mb-2">
           <strong>How to play:</strong> Use arrow keys or swipe to move tiles.
