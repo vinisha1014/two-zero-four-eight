@@ -1,18 +1,28 @@
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { GameState, GameHistory, Direction } from '../types/game';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+  useEffect,
+} from "react";
+import { GameState, GameHistory, Direction } from "../types/game";
 import {
   initializeGrid,
   moveTiles,
-  canMove,
   checkGameOver,
-  checkWin
-} from '../utils/gameLogic';
+  checkWin,
+} from "../utils/gameLogic";
+
+type AnimationMode = "normal" | "fast" | "off";
 
 interface GameContextType extends GameState {
   move: (direction: Direction) => void;
   restart: () => void;
   undo: () => void;
   canUndo: boolean;
+  animationMode: AnimationMode;
+  setAnimationMode: (mode: AnimationMode) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -20,7 +30,7 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export const useGame = () => {
   const context = useContext(GameContext);
   if (!context) {
-    throw new Error('useGame must be used within GameProvider');
+    throw new Error("useGame must be used within GameProvider");
   }
   return context;
 };
@@ -31,7 +41,7 @@ interface GameProviderProps {
 
 export const GameProvider = ({ children }: GameProviderProps) => {
   const [gameState, setGameState] = useState<GameState>(() => {
-    const bestScore = parseInt(localStorage.getItem('bestScore') || '0', 10);
+    const bestScore = parseInt(localStorage.getItem("bestScore") || "0", 10);
     return {
       grid: initializeGrid(),
       score: 0,
@@ -43,49 +53,74 @@ export const GameProvider = ({ children }: GameProviderProps) => {
 
   const [history, setHistory] = useState<GameHistory[]>([]);
 
+  // Animation Mode State
+  const [animationMode, setAnimationModeState] = useState<AnimationMode>(
+    (localStorage.getItem("animationMode") as AnimationMode) || "normal"
+  );
+
+  const setAnimationMode = useCallback((mode: AnimationMode) => {
+    setAnimationModeState(mode);
+    localStorage.setItem("animationMode", mode);
+  }, []);
+
+  // Apply animation speed to CSS variable
+  useEffect(() => {
+    let speed = "0.3s"; // normal
+    if (animationMode === "fast") speed = "0.1s";
+    if (animationMode === "off") speed = "0s";
+
+    document.documentElement.style.setProperty("--tile-speed", speed);
+  }, [animationMode]);
+
   // Save best score to localStorage
   useEffect(() => {
     if (gameState.score > gameState.bestScore) {
-      localStorage.setItem('bestScore', gameState.score.toString());
+      localStorage.setItem("bestScore", gameState.score.toString());
     }
   }, [gameState.score, gameState.bestScore]);
 
-  const move = useCallback((direction: Direction) => {
-    if (gameState.isGameOver) return;
+  const move = useCallback(
+    (direction: Direction) => {
+      if (gameState.isGameOver) return;
 
-    // Save current state to history before moving
-    setHistory(prev => [...prev, {
-      grid: gameState.grid.map(row => [...row]),
-      score: gameState.score,
-    }]);
+      // Save current state to history before moving
+      setHistory((prev) => [
+        ...prev,
+        {
+          grid: gameState.grid.map((row) => [...row]),
+          score: gameState.score,
+        },
+      ]);
 
-    const result = moveTiles(gameState.grid, direction);
+      const result = moveTiles(gameState.grid, direction);
 
-    if (!result.moved) {
-      // Remove the history entry we just added since nothing changed
-      setHistory(prev => prev.slice(0, -1));
-      return;
-    }
+      if (!result.moved) {
+        // Remove the history entry we just added since nothing changed
+        setHistory((prev) => prev.slice(0, -1));
+        return;
+      }
 
-    const newScore = gameState.score + result.scoreGained;
-    const newBestScore = Math.max(gameState.bestScore, newScore);
-    const isWon = checkWin(result.grid);
-    const isGameOver = checkGameOver(result.grid);
+      const newScore = gameState.score + result.scoreGained;
+      const newBestScore = Math.max(gameState.bestScore, newScore);
+      const isWon = checkWin(result.grid);
+      const isGameOver = checkGameOver(result.grid);
 
-    setGameState({
-      grid: result.grid,
-      score: newScore,
-      bestScore: newBestScore,
-      isGameOver,
-      isWon,
-    });
+      setGameState({
+        grid: result.grid,
+        score: newScore,
+        bestScore: newBestScore,
+        isGameOver,
+        isWon,
+      });
 
-    // Keep only last 10 moves in history to prevent memory issues
-    setHistory(prev => prev.slice(-10));
-  }, [gameState]);
+      // Keep only last 10 moves in history to prevent memory issues
+      setHistory((prev) => prev.slice(-10));
+    },
+    [gameState]
+  );
 
   const restart = useCallback(() => {
-    setGameState(prev => ({
+    setGameState((prev) => ({
       grid: initializeGrid(),
       score: 0,
       bestScore: prev.bestScore,
@@ -99,14 +134,14 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     if (history.length === 0) return;
 
     const previousState = history[history.length - 1];
-    setGameState(prev => ({
+    setGameState((prev) => ({
       ...prev,
       grid: previousState.grid,
       score: previousState.score,
       isGameOver: false,
       isWon: false,
     }));
-    setHistory(prev => prev.slice(0, -1));
+    setHistory((prev) => prev.slice(0, -1));
   }, [history]);
 
   const value: GameContextType = {
@@ -115,6 +150,8 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     restart,
     undo,
     canUndo: history.length > 0,
+    animationMode,
+    setAnimationMode,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

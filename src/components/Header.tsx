@@ -1,11 +1,31 @@
 import { RotateCcw, Undo2 } from 'lucide-react';
 import { useGame } from '../context/GameContext';
+import { useState, useEffect } from 'react';
 
 /**
  * Header component displays score, best score, and control buttons
  */
 const Header = () => {
   const { score, bestScore, restart, undo, canUndo } = useGame();
+  const [speed, setSpeed] = useState<'normal' | 'fast' | 'off'>(
+    (localStorage.getItem('animationSpeed') as 'normal' | 'fast' | 'off') || 'normal'
+  );
+
+  useEffect(() => {
+    // Apply the CSS variable for tile animation speed
+    const speedMap: Record<typeof speed, string> = {
+      normal: '150ms',
+      fast: '75ms',
+      off: '0ms',
+    };
+    document.documentElement.style.setProperty('--tile-speed', speedMap[speed]);
+  }, [speed]);
+
+  const handleSpeedChange = (value: 'normal' | 'fast' | 'off') => {
+    setSpeed(value);
+    localStorage.setItem('animationSpeed', value);
+    window.dispatchEvent(new CustomEvent('animationSpeedChange', { detail: value }));
+  };
 
   return (
     <div className="w-full max-w-[400px] mb-6">
@@ -21,7 +41,19 @@ const Header = () => {
         <p className="text-[#776e65] text-sm">
           Join tiles to reach <strong>2048!</strong>
         </p>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <select
+            value={speed}
+            onChange={(e) => handleSpeedChange(e.target.value as 'normal' | 'fast' | 'off')}
+            className="px-3 py-2 bg-[#8f7a66] text-white rounded-md font-semibold 
+                       hover:bg-[#9f8a76] transition-colors cursor-pointer focus:outline-none"
+            title="Animation speed"
+          >
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+            <option value="off">Off</option>
+          </select>
+
           <button
             onClick={undo}
             disabled={!canUndo}
