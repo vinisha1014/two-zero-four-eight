@@ -18,7 +18,7 @@ function Game() {
   useGameControls(move);
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center p-10">
       <Header />
       <div className="relative">
         <Grid />

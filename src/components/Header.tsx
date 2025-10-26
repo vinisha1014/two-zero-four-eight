@@ -28,7 +28,7 @@ const Header = () => {
   };
 
   return (
-    <div className="w-full max-w-[400px] mb-6">
+    <div className="w-full max-w-[410px] mb-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-6xl font-bold text-[#776e65]">2048</h1>
         <div className="flex gap-3">
@@ -37,8 +37,8 @@ const Header = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <p className="text-[#776e65] text-sm">
+      <div className="flex justify-between">
+        <p className="text-[#776e65] text-sm mt-3">
           Join tiles to reach <strong>2048!</strong>
         </p>
         <div className="flex gap-2 items-center">

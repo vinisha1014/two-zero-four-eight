@@ -18,7 +18,7 @@ interface StatProps {
 }
 
 const Stat = ({ label, value }: StatProps) => (
-  <div className="text-center">
+  <div className="text-center mx-2">
     <div className="text-lg font-bold">{value}</div>
     <div className="text-xs text-[#eee4da] uppercase">{label}</div>
   </div>
