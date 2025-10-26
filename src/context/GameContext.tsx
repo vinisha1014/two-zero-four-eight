@@ -76,6 +76,8 @@ export const GameProvider = ({ children }: GameProviderProps) => {
       ]);
 
       const result = moveTiles(gameState.grid, direction);
+      const comboBonus = result.mergedTiles > 1 ? (result.mergedTiles - 1) * 10 : 0;
+      setMerges((prev) => prev + (result.mergedTiles || 0));
 
       if (!result.moved) {
         setHistory((prev) => prev.slice(0, -1));
