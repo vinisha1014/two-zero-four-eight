@@ -3,23 +3,24 @@ import { Tile, Direction } from '../types/game';
 /**
  * Initialize a 4x4 grid with two random tiles
  */
-export const initializeGrid = (): (Tile | null)[][] => {
-  const grid: (Tile | null)[][] = Array.from({ length: 4 }, () =>
-    Array(4).fill(null)
-  );
-  addRandomTile(grid);
-  addRandomTile(grid);
+export const initializeGrid = (boardSize = 4): (Tile | null)[][] => {
+  const grid: (Tile | null)[][] = Array(boardSize)
+    .fill(null)
+    .map(() => Array(boardSize).fill(null));
+  addRandomTile(grid, boardSize);
+  addRandomTile(grid, boardSize);
   return grid;
 };
+
 
 /**
  * Add a random tile (2 or 4) to an empty cell
  */
-export const addRandomTile = (grid: (Tile | null)[][]): void => {
+export const addRandomTile = (grid: (Tile | null)[][], boardSize = 4): void => {
   const emptyCells: { row: number; col: number }[] = [];
 
-  for (let row = 0; row < 4; row++) {
-    for (let col = 0; col < 4; col++) {
+  for (let row = 0; row < boardSize; row++) {
+    for (let col = 0; col < boardSize; col++) {
       if (!grid[row][col]) {
         emptyCells.push({ row, col });
       }
@@ -28,8 +29,7 @@ export const addRandomTile = (grid: (Tile | null)[][]): void => {
 
   if (emptyCells.length === 0) return;
 
-  const { row, col } =
-    emptyCells[Math.floor(Math.random() * emptyCells.length)];
+  const { row, col } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
   const value = Math.random() < 0.9 ? 2 : 4;
 
   grid[row][col] = {
