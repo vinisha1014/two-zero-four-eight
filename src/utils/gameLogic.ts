@@ -12,6 +12,8 @@ export const initializeGrid = (boardSize = 4): (Tile | null)[][] => {
   return grid;
 };
 
+const BOARD_SIZE = 4;
+
 
 /**
  * Add a random tile (2 or 4) to an empty cell
@@ -91,9 +93,9 @@ const getLines = (grid: (Tile | null)[][], direction: Direction) => {
     if (tile) tile.position = pos;
   };
 
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < BOARD_SIZE; i++) {
     const line: (Tile | null)[] = [];
-    for (let j = 0; j < 4; j++) {
+    for (let j = 0; j < BOARD_SIZE; j++) {
       const pos = getGridPosition(direction, i, j);
       line.push(grid[pos.row][pos.col]);
     }
@@ -115,11 +117,11 @@ const getGridPosition = (
     case 'left':
       return { row: lineIndex, col: position };
     case 'right':
-      return { row: lineIndex, col: 3 - position };
+      return { row: lineIndex, col: BOARD_SIZE - 1 - position };
     case 'up':
       return { row: position, col: lineIndex };
     case 'down':
-      return { row: 3 - position, col: lineIndex };
+      return { row: BOARD_SIZE - 1 - position, col: lineIndex };
   }
 };
 
@@ -130,7 +132,7 @@ const mergeLine = (
   line: (Tile | null)[]
 ): { newLine: (Tile | null)[]; lineMoved: boolean; lineScore: number; lineMerges: number } => {
   const tiles = line.filter((tile): tile is Tile => tile !== null);
-  const newLine: (Tile | null)[] = Array(4).fill(null);
+  const newLine: (Tile | null)[] = Array(BOARD_SIZE).fill(null);
 
   let lineMoved = false;
   let lineScore = 0;
@@ -157,9 +159,9 @@ const mergeLine = (
     writeIndex++;
   }
 
-  // detect movement
+  // Detect movement by comparing positions
   if (!lineMoved) {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < BOARD_SIZE; i++) {
       if (line[i]?.value !== newLine[i]?.value) {
         lineMoved = true;
         break;
@@ -175,12 +177,14 @@ const mergeLine = (
  * Check if any moves are possible
  */
 export const canMove = (grid: (Tile | null)[][]): boolean => {
-  for (let row = 0; row < 4; row++) {
-    for (let col = 0; col < 4; col++) {
+  const size = grid.length;
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
       const current = grid[row][col];
       if (!current) return true;
-      if (col < 3 && grid[row][col + 1]?.value === current.value) return true;
-      if (row < 3 && grid[row + 1][col]?.value === current.value) return true;
+      const right = grid[row]?.[col + 1];
+      const down = grid[row + 1]?.[col];
+      if (right?.value === current.value || down?.value === current.value) return true;
     }
   }
   return false;
