@@ -1,4 +1,3 @@
-"use client"; 
 import { useTheme } from "../context/ThemeController";
 import { Sun, Moon, Contrast } from "lucide-react";
 
