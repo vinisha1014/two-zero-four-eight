@@ -12,8 +12,7 @@ const Header = () => {
   );
 
   useEffect(() => {
-    // Apply the CSS variable for tile animation speed
-    const speedMap: Record<typeof speed, string> = {
+    const speedMap: Record<'normal' | 'fast' | 'off', string> = {
       normal: '150ms',
       fast: '75ms',
       off: '0ms',
@@ -24,7 +23,6 @@ const Header = () => {
   const handleSpeedChange = (value: 'normal' | 'fast' | 'off') => {
     setSpeed(value);
     localStorage.setItem('animationSpeed', value);
-    window.dispatchEvent(new CustomEvent('animationSpeedChange', { detail: value }));
   };
 
   return (
